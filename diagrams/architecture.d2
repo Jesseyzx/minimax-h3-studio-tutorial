@@ -1,0 +1,48 @@
+direction: down
+
+浏览器: "浏览器 UI\n(Vue 3)"
+HTTP服务: "aiohttp 服务\nserver/app.py" {
+  健康与预设: "http_api/system.py"
+  任务提交: "http_api/submissions.py"
+  任务查询: "http_api/jobs.py"
+  前端静态: "http_api/frontend.py"
+}
+持久化: "SQLite jobs.db\n+ data 目录" {
+  shape: cylinder
+}
+Worker: "FIFO Worker\njob_worker.py" {
+  shape: hexagon
+}
+引擎: "H3Engine\nh3_engine.py" {
+  显存策略: "runtime_memory.py"
+  视频管线: "pipelines/video.py"
+  图片管线: "pipelines/picture.py"
+  音乐管线: "pipelines/music.py"
+  超分管线: "relayvsr / flashvsr / seedvr2"
+  三维管线: "pipelines/pixal.py"
+  语音管线: "pipelines/audio_cpp.py"
+  LLM管线: "pipelines/llm.py"
+}
+ComfyUI: "ComfyUI 作 Python 库\n(无官方 UI)" {
+  shape: parallelogram
+  DynamicVRAM: "DynamicVRAM + int8 mmap"
+}
+AudioCpp: "audio.cpp 子进程\nloopback :8191" {
+  shape: parallelogram
+}
+Strata: "Strata LLM 子进程\nloopback :8192" {
+  shape: parallelogram
+}
+模型目录: "ComfyUI/models\n+ audio_cpp/models" {
+  shape: cylinder
+}
+
+浏览器 -> HTTP服务: "HTTP /api /files"
+HTTP服务 -> 持久化: "读写任务"
+HTTP服务 -> Worker: "入队"
+Worker -> 引擎: "串行执行"
+引擎 -> ComfyUI: "视频/图/音乐/超分/3D"
+引擎 -> AudioCpp: "语音与转写"
+引擎 -> Strata: "LLM JSONL 批"
+ComfyUI -> 模型目录: "加载权重"
+AudioCpp -> 模型目录: "GGUF"

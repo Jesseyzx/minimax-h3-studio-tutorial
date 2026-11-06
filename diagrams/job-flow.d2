@@ -1,0 +1,18 @@
+direction: right
+
+用户: "Web 表单或 curl" {
+  shape: person
+}
+提交: "POST /api/jobs\njob_forms 校验"
+入库: "JobStore\nstatus=queued" {
+  shape: cylinder
+}
+出队: "Worker._run_one"
+准备显存: "runtime_memory.prepare"
+推理: "pipeline 推理\nComfyUI / audio.cpp / Strata"
+落盘: "写入 data/...\nstatus=done" {
+  shape: cylinder
+}
+回读: "GET /api/jobs/{id}\n/files/..."
+
+用户 -> 提交 -> 入库 -> 出队 -> 准备显存 -> 推理 -> 落盘 -> 回读
